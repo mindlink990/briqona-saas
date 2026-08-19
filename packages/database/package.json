@@ -4,7 +4,7 @@
   "private": true,
   "main": "./index.ts",
   "types": "./index.ts",
-  "dependencies": {"@prisma/client":"latest"},
-  "devDependencies": {"prisma":"latest"},
+  "dependencies": {"@prisma/client":"6.19.0"},
+  "devDependencies": {"prisma":"6.19.0"},
   "scripts": {"build":"prisma generate","db:generate":"prisma generate","db:migrate":"prisma migrate dev","db:studio":"prisma studio"}
 }
