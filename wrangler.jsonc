@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "briqona",
+  "compatibility_date": "2026-08-20",
+  "workers_dev": true,
+  "observability": { "enabled": true }
+}
