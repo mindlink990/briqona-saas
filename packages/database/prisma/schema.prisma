@@ -8,14 +8,15 @@ datasource db {
 }
 
 model Tenant {
-  id            String         @id @default(cuid())
-  name          String
-  slug          String         @unique
-  workspaces    Workspace[]
-  memberships   Membership[]
-  subscriptions Subscription[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                   String                 @id @default(cuid())
+  name                 String
+  slug                 String                 @unique
+  workspaces           Workspace[]
+  memberships          Membership[]
+  subscriptions        Subscription[]
+  financialTransactions FinancialTransaction[]
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 }
 
 model Workspace {
@@ -108,14 +109,14 @@ model Subscription {
 }
 
 model FinancialTransaction {
-  id         String                    @id @default(cuid())
-  type       FinancialTransactionType
-  amount     Int
-  occurredAt DateTime                  @default(now())
+  id          String                    @id @default(cuid())
+  type        FinancialTransactionType
+  amount      Int
+  occurredAt  DateTime                  @default(now())
   description String?
-  tenantId   String?
-  tenant     Tenant?                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt  DateTime                  @default(now())
+  tenantId    String?
+  tenant      Tenant?                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime                  @default(now())
   @@index([occurredAt])
   @@index([type])
   @@index([tenantId])
