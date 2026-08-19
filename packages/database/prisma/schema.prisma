@@ -59,7 +59,7 @@ model Membership {
 
 model Session {
   id          String    @id @default(cuid())
-  tokenHash   String    @unique
+  tokenHash   String   @unique
   userId      String
   tenantId    String
   workspaceId String
@@ -71,52 +71,42 @@ model Session {
 }
 
 model Plan {
-  id             String         @id @default(cuid())
-  name           String         @unique
-  slug           String         @unique
-  description    String?
-  monthlyPrice   Int
-  yearlyPrice    Int
-  currency       String         @default("USD")
-  active         Boolean        @default(true)
-  maxUsers       Int?
-  maxWorkspaces  Int            @default(1)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  subscriptions  Subscription[]
+  id                    String         @id @default(cuid())
+  name                  String         @unique
+  slug                  String         @unique
+  description           String?
+  monthlyPrice          Int
+  yearlyPrice           Int
+  currency              String         @default("USD")
+  active                Boolean        @default(true)
+  maxUsers              Int?
+  maxWorkspaces         Int            @default(1)
+  stripeMonthlyPriceId  String?
+  stripeYearlyPriceId   String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  subscriptions         Subscription[]
 }
 
 model Subscription {
-  id                 String             @id @default(cuid())
-  tenantId           String
-  planId             String
-  status             SubscriptionStatus @default(TRIALING)
-  billingInterval    BillingInterval    @default(MONTHLY)
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plan               Plan               @relation(fields: [planId], references: [id])
+  id                   String             @id @default(cuid())
+  tenantId             String
+  planId               String
+  status               SubscriptionStatus @default(TRIALING)
+  billingInterval      BillingInterval    @default(MONTHLY)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  stripeCustomerId     String?
+  stripeSubscriptionId String?            @unique
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  tenant               Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan                 Plan               @relation(fields: [planId], references: [id])
   @@index([tenantId])
   @@index([planId])
+  @@index([stripeCustomerId])
 }
 
-enum Role {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
-}
-
-enum SubscriptionStatus {
-  TRIALING
-  ACTIVE
-  PAST_DUE
-  CANCELED
-}
-
-enum BillingInterval {
-  MONTHLY
-  YEARLY
-}
+enum Role { OWNER ADMIN MEMBER VIEWER }
+enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED }
+enum BillingInterval { MONTHLY YEARLY }
