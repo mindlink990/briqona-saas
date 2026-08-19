@@ -107,6 +107,26 @@ model Subscription {
   @@index([stripeCustomerId])
 }
 
+model FinancialTransaction {
+  id         String                    @id @default(cuid())
+  type       FinancialTransactionType
+  amount     Int
+  occurredAt DateTime                  @default(now())
+  description String?
+  tenantId   String?
+  tenant     Tenant?                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt  DateTime                  @default(now())
+  @@index([occurredAt])
+  @@index([type])
+  @@index([tenantId])
+}
+
+enum FinancialTransactionType {
+  REVENUE
+  EXPENSE
+  REFUND
+}
+
 enum Role {
   OWNER
   ADMIN
