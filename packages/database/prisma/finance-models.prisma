@@ -1,0 +1,18 @@
+model FinancialTransaction {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  type        FinancialTransactionType
+  amount      Int
+  currency    String   @default("USD")
+  description String?
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  @@index([occurredAt])
+  @@index([tenantId, occurredAt])
+}
+
+enum FinancialTransactionType {
+  REVENUE
+  EXPENSE
+  REFUND
+}
