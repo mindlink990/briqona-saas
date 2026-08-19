@@ -1,0 +1,18 @@
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+
+const iterations = 120000
+
+export function hashPassword(password: string) {
+  const salt = randomBytes(16).toString('hex')
+  const hash = createHash('sha256').update(`${salt}:${password}`).digest('hex')
+  return `${salt}:${hash}`
+}
+
+export function verifyPassword(password: string, stored: string) {
+  const [salt, expected] = stored.split(':')
+  if (!salt || !expected) return false
+  const actual = createHash('sha256').update(`${salt}:${password}`).digest('hex')
+  return timingSafeEqual(Buffer.from(actual), Buffer.from(expected))
+}
+
+export { iterations }
