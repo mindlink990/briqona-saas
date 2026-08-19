@@ -59,7 +59,7 @@ model Membership {
 
 model Session {
   id          String    @id @default(cuid())
-  tokenHash   String   @unique
+  tokenHash   String    @unique
   userId      String
   tenantId    String
   workspaceId String
@@ -107,6 +107,21 @@ model Subscription {
   @@index([stripeCustomerId])
 }
 
-enum Role { OWNER ADMIN MEMBER VIEWER }
-enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED }
-enum BillingInterval { MONTHLY YEARLY }
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
