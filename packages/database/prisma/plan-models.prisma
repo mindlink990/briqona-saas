@@ -1,0 +1,42 @@
+// Subscription plan domain models. Merge into schema.prisma when applying the next migration.
+model Plan {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  monthlyPrice   Int
+  yearlyPrice    Int
+  currency       String   @default("USD")
+  active         Boolean  @default(true)
+  maxUsers       Int?
+  maxWorkspaces  Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  subscriptions  Subscription[]
+}
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  planId             String
+  status             SubscriptionStatus @default(TRIALING)
+  billingInterval    BillingInterval @default(MONTHLY)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  plan                Plan @relation(fields: [planId], references: [id])
+  @@index([tenantId])
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
