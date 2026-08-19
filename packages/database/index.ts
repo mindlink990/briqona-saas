@@ -1,12 +1,8 @@
-export type Tenant = {
-  id: string;
-  name: string;
-  slug: string;
-};
+import { PrismaClient } from '@prisma/client'
 
-export type Workspace = {
-  id: string;
-  tenantId: string;
-  name: string;
-  slug: string;
-};
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
+export const db = globalForPrisma.prisma ?? new PrismaClient()
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+
+export type Tenant = { id: string; name: string; slug: string }
+export type Workspace = { id: string; tenantId: string; name: string; slug: string }
