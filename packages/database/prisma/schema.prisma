@@ -8,13 +8,13 @@ datasource db {
 }
 
 model Tenant {
-  id          String      @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
-  slug        String      @unique
+  slug        String       @unique
   workspaces  Workspace[]
   memberships Membership[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Workspace {
@@ -27,28 +27,51 @@ model Workspace {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   @@unique([tenantId, slug])
+  @@index([tenantId])
 }
 
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
   name         String?
+  passwordHash String
   memberships  Membership[]
+  sessions     Session[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 }
 
 model Membership {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   userId      String
   tenantId    String
-  workspaceId String?
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  role        String    @default("member")
-  createdAt   DateTime  @default(now())
-  @@unique([userId, tenantId, workspaceId])
+  workspaceId String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role        Role       @default(MEMBER)
+  createdAt   DateTime   @default(now())
+  @@unique([userId, workspaceId])
   @@index([tenantId])
   @@index([workspaceId])
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  userId      String
+  tenantId    String
+  workspaceId String
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([tenantId, workspaceId])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
