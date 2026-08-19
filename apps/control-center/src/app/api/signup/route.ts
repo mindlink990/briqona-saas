@@ -10,29 +10,35 @@ export async function POST(request: Request) {
   const name = String(body.name ?? '').trim()
   const password = String(body.password ?? '')
   const tenantName = String(body.tenantName ?? '').trim()
+  const planId = String(body.planId ?? '').trim()
 
-  if (!email || !password || password.length < 8 || !tenantName) {
+  if (!email || !password || password.length < 8 || !tenantName || !planId) {
     return NextResponse.json({ error: 'Invalid signup data' }, { status: 400 })
   }
 
   const existing = await db.user.findUnique({ where: { email } })
   if (existing) return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
+  const plan = await db.plan.findFirst({ where: { id: planId, active: true } })
+  if (!plan) return NextResponse.json({ error: 'Selected plan is unavailable' }, { status: 400 })
 
   const baseSlug = tenantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'workspace'
   const slug = `${baseSlug}-${Date.now().toString(36)}`
   const token = createSessionToken()
   const tokenHash = createHash('sha256').update(token).digest('hex')
+  const start = new Date()
+  const end = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000)
 
   const result = await db.$transaction(async (tx) => {
     const tenant = await tx.tenant.create({ data: { name: tenantName, slug } })
     const workspace = await tx.workspace.create({ data: { tenantId: tenant.id, name: tenantName, slug: 'main' } })
     const user = await tx.user.create({ data: { email, name: name || null, passwordHash: hashPassword(password) } })
     await tx.membership.create({ data: { userId: user.id, tenantId: tenant.id, workspaceId: workspace.id, role: 'OWNER' } })
+    await tx.subscription.create({ data: { tenantId: tenant.id, planId: plan.id, status: 'TRIALING', billingInterval: 'MONTHLY', currentPeriodStart: start, currentPeriodEnd: end } })
     await tx.session.create({ data: { tokenHash, userId: user.id, tenantId: tenant.id, workspaceId: workspace.id, expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) } })
     return { tenant, workspace }
   })
 
-  const response = NextResponse.json({ ok: true, tenantId: result.tenant.id, workspaceId: result.workspace.id })
+  const response = NextResponse.json({ ok: true, tenantId: result.tenant.id, workspaceId: result.workspace.id, planId: plan.id })
   response.cookies.set('briqona_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 30 })
   return response
 }
